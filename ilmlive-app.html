@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="ur-Latn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>IlmLive — Sawal · Jawab · Live Munazra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;1,500&family=Poppins:wght@400;500;600;700&display=swap');
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: #0F221D; }
+  #app-frame { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #F6F5F1; box-shadow: 0 0 60px rgba(0,0,0,0.35); position: relative; }
+  @media (min-width: 481px) { body { padding: 24px 0; } }
+
+  .live-dot { width:6px; height:6px; border-radius:999px; background:#fff; animation: livePulse 1.2s ease-in-out infinite; }
+  @keyframes livePulse { 0%,100%{ opacity:1; transform:scale(1);} 50%{ opacity:0.4; transform:scale(0.7);} }
+  .shimmer { background: linear-gradient(90deg,#ECEAE2 25%,#F5F3EC 37%,#ECEAE2 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; }
+  @keyframes shimmer { 0%{ background-position: 100% 50%;} 100%{ background-position: 0 50%;} }
+  .float-up { animation: floatUp 1.8s ease-out forwards; }
+  @keyframes floatUp { 0%{ transform: translateY(0); opacity:1;} 100%{ transform: translateY(-140px); opacity:0;} }
+  .gold-shimmer { position:absolute; inset:0; background: linear-gradient(120deg, transparent 30%, rgba(248,239,217,0.18) 50%, transparent 70%); background-size:200% 100%; animation: goldShimmer 3s ease-in-out infinite; }
+  @keyframes goldShimmer { 0%{ background-position: 200% 0;} 100%{ background-position: -200% 0;} }
+  .splash-logo { animation: splashPop 0.7s cubic-bezier(.34,1.56,.64,1) both; }
+  @keyframes splashPop { 0%{ transform: scale(0.4); opacity:0;} 100%{ transform: scale(1); opacity:1;} }
+  .splash-text { animation: splashFade 0.8s ease 0.25s both; }
+  @keyframes splashFade { 0%{ opacity:0; transform: translateY(6px);} 100%{ opacity:1; transform: translateY(0);} }
+  .carousel-fade { animation: carouselFade 0.5s ease both; }
+  @keyframes carouselFade { 0%{ opacity:0; transform: translateX(8px);} 100%{ opacity:1; transform: translateX(0);} }
+  .toast-in { animation: toastIn 0.35s cubic-bezier(.34,1.56,.64,1) both; }
+  @keyframes toastIn { 0%{ transform: translateY(-40px); opacity:0;} 100%{ transform: translateY(0); opacity:1;} }
+  .dropdown-in { animation: dropdownIn 0.18s ease both; transform-origin: top right; }
+  @keyframes dropdownIn { 0%{ opacity:0; transform: scale(0.95) translateY(-6px);} 100%{ opacity:1; transform: scale(1) translateY(0);} }
+  .eq-bar { display:inline-block; width:3px; margin-right:2px; background:#0B6E55; animation: eq 0.8s ease-in-out infinite; }
+  @keyframes eq { 0%,100%{ height:5px;} 50%{ height:16px;} }
+  .spin { animation: spin 0.8s linear infinite; }
+  @keyframes spin { from{ transform: rotate(0deg);} to{ transform: rotate(360deg);} }
+  .bar-grow { animation: barGrow 0.8s cubic-bezier(.16,1,.3,1) both; }
+  @keyframes barGrow { 0%{ transform: scaleX(0);} 100%{ transform: scaleX(1);} }
+  button { font-family: inherit; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 999px; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.383.0?external=react"
+  }
+}
+</script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+<div id="app-frame">
+  <div id="root">
+    <div id="boot-fallback" style="padding:40px 20px; font-family:sans-serif; color:#17221E; text-align:center;">
+      <div style="font-size:15px; font-weight:600; margin-bottom:8px;">Loading IlmLive…</div>
+      <div style="font-size:12.5px; color:#75807A;">Agar yeh message ghayab nahi hota, to internet connection check karein (yeh app React/Babel/Icons ko internet se load karta hai).</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Diagnostic layer: runs with plain JS (no Babel/network dependency) so that
+  // if anything downstream fails, the user sees *why* instead of a blank page.
+  window.addEventListener("error", function (e) {
+    showBootError((e && e.message) || "Unknown script error", e.filename, e.lineno);
+  });
+  window.addEventListener("unhandledrejection", function (e) {
+    var reason = e && e.reason ? (e.reason.message || String(e.reason)) : "Unknown promise rejection";
+    showBootError(reason);
+  });
+  function showBootError(msg, file, line) {
+    var el = document.getElementById("boot-fallback");
+    if (!el) return;
+    el.innerHTML =
+      '<div style="font-size:15px; font-weight:700; color:#B03434; margin-bottom:8px;">App load nahi ho saka</div>' +
+      '<div style="font-size:12.5px; color:#444; word-break:break-word;">' + String(msg) + (file ? ' <br/><span style="color:#999">(' + file + (line ? ":" + line : "") + ')</span>' : '') + '</div>' +
+      '<div style="font-size:11.5px; color:#999; margin-top:10px;">Common wajah: internet connection na hona, ya CDN (unpkg/esm.sh/fonts) block hona. Dobara internet ke sath try karein.</div>';
+  }
+  // If nothing has replaced the fallback within 12s, assume CDN scripts failed to load
+  // (most common cause: no internet, or unpkg.com / esm.sh blocked on this network).
+  setTimeout(function () {
+    var el = document.getElementById("boot-fallback");
+    if (el && document.getElementById("root").children.length === 1) {
+      showBootError("Timeout: React/Babel/Icons CDN se load nahi ho paye (12 second guzar gaye).");
+    }
+  }, 12000);
+</script>
+
+<script type="text/babel" data-type="module" data-presets="react">
+import React, { useState, useEffect, useRef, useCallback, useContext, createContext } from "react";
+import { createRoot } from "react-dom/client";
+import {
+  Radio, MessageCircle, Send, Search, Crown, User, Users, ShieldCheck, CheckCircle2,
+  XCircle, Flag, Megaphone, PlusCircle, LogOut, Sparkles, TrendingUp, Star, Clock,
+  ChevronRight, Trash2, Ban, Play, Pause, Square, Bell, Bookmark, Swords, BadgeCheck,
+  Hourglass, Tag, ArrowLeft, ThumbsUp, Headphones, BookOpenText, RefreshCw, Moon, Sun,
+  Filter, Download, Share2, Trophy, BarChart3, X, Award, Medal,
+} from "lucide-react";
+
+/* ============================== helpers ============================== */
+
+const uid = () => Math.random().toString(36).slice(2, 10);
+const timeAgo = (ts) => {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return "abhi";
+  if (s < 3600) return `${Math.floor(s / 60)}m pehle`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h pehle`;
+  return `${Math.floor(s / 86400)}d pehle`;
+};
+
+async function getShared(key, fallback) {
+  try {
+    const r = await window.storage.get(key, true);
+    return r && r.value ? JSON.parse(r.value) : fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+async function setShared(key, value) {
+  try {
+    await window.storage.set(key, JSON.stringify(value), true);
+  } catch (e) { /* best effort */ }
+}
+async function getPersonal(key, fallback) {
+  try {
+    const r = await window.storage.get(key, false);
+    return r && r.value ? JSON.parse(r.value) : fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+async function setPersonal(key, value) {
+  try {
+    await window.storage.set(key, JSON.stringify(value), false);
+  } catch (e) { /* best effort */ }
+}
+
+const DEFAULT_CATEGORIES = ["Aqeedah", "Namaz", "Roza", "Zakat", "Hajj", "Nikah", "Muamlaat", "Ikhtilafi Masail"];
+
+function useCountUp(target, duration = 700) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    let start = null;
+    let raf;
+    const step = (ts) => {
+      if (start === null) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      setVal(Math.floor(p * target));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target]);
+  return val;
+}
+
+function avgRating(q) {
+  if (!q || !q.ratingCount) return 0;
+  return q.ratingSum / q.ratingCount;
+}
+
+function shareText(q) {
+  const text = `${q.question}\n\n${q.answer ? "Jawab: " + q.answer + "\n\n" : ""}— ${q.muftiName || "IlmLive"} · IlmLive App`;
+  if (navigator.share) {
+    navigator.share({ title: "IlmLive Masla", text }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text);
+  }
+}
+
+/* ============================== theme ============================== */
+
+const LIGHT = {
+  mode: "light", bg: "#F6F5F1", surface: "#fff", surface2: "#FBFAF7", surface3: "#EFEEE8",
+  text: "#17221E", sub: "#75807A", sub2: "#9AA39D", border: "#E2E1D9", shadow: "none",
+};
+const DARK = {
+  mode: "dark", bg: "#101613", surface: "#1B2420", surface2: "#212B26", surface3: "#26322C",
+  text: "#ECEFEA", sub: "#9FB0A8", sub2: "#75847C", border: "#2B3731", shadow: "0 6px 18px -8px rgba(0,0,0,0.5)",
+};
+const ThemeCtx = createContext(LIGHT);
+const useTheme = () => useContext(ThemeCtx);
+
+function inputStyleFor(t) {
+  return { width: "100%", boxSizing: "border-box", padding: "11px 12px", borderRadius: 10, border: `1px solid ${t.border}`, fontSize: 14, color: t.text, background: t.surface2 };
+}
+
+/* ============================== shared UI ============================== */
+
+function Badge({ children, tone = "brand" }) {
+  const tones = {
+    brand: { bg: "#E4F2EE", text: "#0B6E55" },
+    gold: { bg: "#F8EFD9", text: "#8A6A1E" },
+    red: { bg: "#FBE7E7", text: "#B03434" },
+    purple: { bg: "#EFEAF8", text: "#5B3F91" },
+    grey: { bg: "#EFEEE8", text: "#6B7168" },
+  };
+  const t = tones[tone];
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: t.bg, color: t.text, fontSize: 11.5, fontWeight: 700, padding: "3px 9px", borderRadius: 999, letterSpacing: 0.2, whiteSpace: "nowrap" }}>
+      {children}
+    </span>
+  );
+}
+
+function LivePulse() {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#D64545", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 9px 3px 7px", borderRadius: 999, flexShrink: 0 }}>
+      <span className="live-dot" /> LIVE
+    </span>
+  );
+}
+
+function PrimaryButton({ children, onClick, style, disabled, icon }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+        background: disabled ? "#B7C9C3" : "linear-gradient(135deg,#0B6E55,#0E8C6C)", color: "#fff",
+        border: "none", borderRadius: 999, padding: "11px 20px", fontSize: 14, fontWeight: 700,
+        cursor: disabled ? "default" : "pointer", boxShadow: disabled ? "none" : "0 6px 16px -6px rgba(11,110,85,0.55)",
+        transition: "transform .15s ease", ...style,
+      }}
+      onMouseDown={(e) => { if (!disabled) e.currentTarget.style.transform = "scale(0.97)"; }}
+      onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+    >
+      {icon} {children}
+    </button>
+  );
+}
+
+function GhostButton({ children, onClick, style, icon }) {
+  const t = useTheme();
+  return (
+    <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: t.surface, color: t.text, border: `1px solid ${t.border}`, borderRadius: 999, padding: "9px 16px", fontSize: 13.5, fontWeight: 600, cursor: "pointer", ...style }}>
+      {icon} {children}
+    </button>
+  );
+}
+
+function IconButton({ children, onClick, active, style, title }) {
+  const t = useTheme();
+  return (
+    <button onClick={onClick} title={title} style={{ width: 36, height: 36, borderRadius: 999, border: `1px solid ${t.border}`, background: active ? "#0B6E55" : t.surface, color: active ? "#fff" : t.text, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, ...style }}>
+      {children}
+    </button>
+  );
+}
+
+function Skeleton({ h = 70 }) {
+  return <div className="shimmer" style={{ height: h, borderRadius: 12, marginBottom: 10 }} />;
+}
+
+function EmptyState({ icon, text }) {
+  const t = useTheme();
+  return (
+    <div style={{ textAlign: "center", padding: "36px 20px", color: t.sub }}>
+      {icon}
+      <p style={{ fontSize: 13.5, marginTop: 8 }}>{text}</p>
+    </div>
+  );
+}
+
+function SectionTitle({ icon, text, style, action }) {
+  const t = useTheme();
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, ...style }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "'Newsreader', serif", fontSize: 15.5, color: t.text }}>{icon} {text}</div>
+      {action}
+    </div>
+  );
+}
+
+function StarRating({ value, count, interactive, onRate, size = 14 }) {
+  const [hover, setHover] = useState(0);
+  const display = hover || Math.round(value);
+  return (
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span
+          key={n}
+          onMouseEnter={() => interactive && setHover(n)}
+          onMouseLeave={() => interactive && setHover(0)}
+          onClick={() => interactive && onRate && onRate(n)}
+          style={{ cursor: interactive ? "pointer" : "default", lineHeight: 0 }}
+        >
+          <Star size={size} color={n <= display ? "#C89B3C" : "#D9D6C9"} fill={n <= display ? "#C89B3C" : "none"} />
+        </span>
+      ))}
+      {typeof count === "number" && count > 0 && <span style={{ fontSize: 11, color: "#9AA39D", marginLeft: 3 }}>({count})</span>}
+    </div>
+  );
+}
+
+/* ============================== Notification Center ============================== */
+
+function NotificationBell({ items }) {
+  const t = useTheme();
+  const [open, setOpen] = useState(false);
+  const [seenCount, setSeenCount] = useState(0);
+  const unread = Math.max(0, items.length - seenCount);
+  return (
+    <div style={{ position: "relative" }}>
+      <IconButton onClick={() => { setOpen((o) => !o); if (!open) setSeenCount(items.length); }} title="Notifications">
+        <Bell size={16} />
+      </IconButton>
+      {unread > 0 && (
+        <span style={{ position: "absolute", top: -3, right: -3, background: "#D64545", color: "#fff", fontSize: 9.5, fontWeight: 700, borderRadius: 999, minWidth: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>
+          {unread}
+        </span>
+      )}
+      {open && (
+        <div className="dropdown-in" style={{ position: "absolute", top: 44, right: 0, width: 280, maxHeight: 340, overflowY: "auto", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 14, boxShadow: "0 14px 30px -10px rgba(0,0,0,0.25)", zIndex: 40, padding: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 6px 8px" }}>
+            <span style={{ fontWeight: 700, fontSize: 13, color: t.text }}>Notifications</span>
+            <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: t.sub, display: "flex" }}><X size={15} /></button>
+          </div>
+          {items.length === 0 && <p style={{ fontSize: 12.5, color: t.sub, padding: "10px 6px" }}>Koi notification nahi.</p>}
+          {items.map((n) => (
+            <div key={n.id} style={{ display: "flex", gap: 8, padding: "8px 6px", borderTop: `1px solid ${t.border}` }}>
+              <div style={{ width: 28, height: 28, borderRadius: 999, background: "#E4F2EE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#0B6E55" }}>{n.icon}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, color: t.text, lineHeight: 1.4 }}>{n.text}</div>
+                <div style={{ fontSize: 10.5, color: t.sub2, marginTop: 2 }}>{n.time}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TopBar({ title, icon, notifications, dark, onToggleDark, onRefresh, tone = "brand" }) {
+  const t = useTheme();
+  const accent = tone === "gold" ? "#8A6A1E" : tone === "purple" ? "#5B3F91" : "#0B6E55";
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "'Newsreader', serif", fontSize: 19, color: t.text }}>
+        {icon} {title}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {onRefresh && <IconButton onClick={onRefresh} title="Refresh"><RefreshCw size={15} /></IconButton>}
+        <NotificationBell items={notifications || []} />
+        <IconButton onClick={onToggleDark} title="Theme" active={dark}>
+          {dark ? <Sun size={15} /> : <Moon size={15} />}
+        </IconButton>
+      </div>
+    </div>
+  );
+}
+
+/* ============================== Splash ============================== */
+
+function SplashScreen() {
+  return (
+    <div style={{ minHeight: "100vh", background: "linear-gradient(180deg,#0B6E55 0%,#0A5B47 45%,#0F221D 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+      <div className="splash-logo" style={{ width: 84, height: 84, borderRadius: 24, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
+        <BookOpenText size={38} color="#F8EFD9" />
+      </div>
+      <h1 className="splash-text" style={{ fontFamily: "'Newsreader', serif", fontStyle: "italic", color: "#fff", fontSize: 28, margin: 0 }}>IlmLive</h1>
+      <p className="splash-text" style={{ color: "#CFE3DC", fontSize: 12.5, marginTop: 6, letterSpacing: 0.4 }}>Sawal · Jawab · Live Munazra</p>
+    </div>
+  );
+}
+
+/* ============================== Login / role select ============================== */
+
+function LoginScreen({ onEnter }) {
+  const [step, setStep] = useState("pick");
+  const [role, setRole] = useState(null);
+  const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
+  const [passcode, setPasscode] = useState("");
+  const [error, setError] = useState("");
+
+  const ROLES = [
+    { id: "user", label: "User", desc: "Sawal poochein, live majlis join karein", icon: <User size={22} /> },
+    { id: "scholar", label: "Aalim / Mufti Panel", desc: "Masail ka jawab dein, live munazra karein", icon: <BadgeCheck size={22} /> },
+    { id: "admin", label: "Admin Panel", desc: "Poora management system", icon: <ShieldCheck size={22} /> },
+  ];
+
+  const pick = (r) => { setRole(r); setError(""); setStep(r === "user" ? "name" : r === "scholar" ? "scholar" : "admin"); };
+
+  const submit = () => {
+    if (role === "user") {
+      if (!name.trim()) return setError("Apna naam likhein.");
+      onEnter({ role: "user", name: name.trim() });
+    } else if (role === "scholar") {
+      if (!name.trim()) return setError("Apna naam likhein.");
+      onEnter({ role: "scholar", name: name.trim(), bio: bio.trim() });
+    } else if (role === "admin") {
+      if (passcode !== "786786") return setError("Ghalat passcode. Demo passcode: 786786");
+      onEnter({ role: "admin", name: "Admin" });
+    }
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: "linear-gradient(180deg,#0B6E55 0%,#0A5B47 45%,#0F221D 100%)", display: "flex", flexDirection: "column", padding: "40px 20px" }}>
+      <div style={{ textAlign: "center", marginBottom: 30 }}>
+        <div style={{ width: 62, height: 62, borderRadius: 18, background: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+          <Sparkles size={28} color="#F8EFD9" />
+        </div>
+        <h1 style={{ fontFamily: "'Newsreader', serif", fontStyle: "italic", color: "#fff", fontSize: 26, margin: 0 }}>IlmLive</h1>
+        <p style={{ color: "#CFE3DC", fontSize: 13, marginTop: 6 }}>Sawal, Jawab &amp; Live Munazra — aik jagah</p>
+      </div>
+
+      {step === "pick" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {ROLES.map((r) => (
+            <button key={r.id} onClick={() => pick(r.id)} style={{ display: "flex", alignItems: "center", gap: 14, textAlign: "left", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.16)", borderRadius: 16, padding: 16, cursor: "pointer", color: "#fff" }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>{r.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>{r.label}</div>
+                <div style={{ fontSize: 12, color: "#CFE3DC", marginTop: 2 }}>{r.desc}</div>
+              </div>
+              <ChevronRight size={18} color="#CFE3DC" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {(step === "name" || step === "scholar") && (
+        <div style={{ background: "#fff", borderRadius: 18, padding: 20 }}>
+          <button onClick={() => setStep("pick")} style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: "#75807A", fontSize: 13, marginBottom: 12, cursor: "pointer", padding: 0 }}>
+            <ArrowLeft size={14} /> Wapas
+          </button>
+          <p style={{ fontFamily: "'Newsreader', serif", fontSize: 17, margin: "0 0 14px 0", color: "#17221E" }}>
+            {step === "scholar" ? "Aalim Panel — Registration" : "Apna naam likhein"}
+          </p>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Naam" style={inputStyleFor(LIGHT)} />
+          {step === "scholar" && (
+            <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Mukhtasar taaruf (darsgah, ijazat, waghera)" style={{ ...inputStyleFor(LIGHT), minHeight: 70, resize: "vertical", marginTop: 10 }} />
+          )}
+          {step === "scholar" && (
+            <p style={{ fontSize: 12, color: "#8A6A1E", background: "#F8EFD9", padding: "8px 10px", borderRadius: 8, marginTop: 10 }}>
+              Registration ke baad Admin ki approval ka intezar karna hoga.
+            </p>
+          )}
+          {error && <p style={{ color: "#B03434", fontSize: 12.5, marginTop: 8 }}>{error}</p>}
+          <PrimaryButton onClick={submit} style={{ width: "100%", marginTop: 14, justifyContent: "center" }}>Aagey barhein</PrimaryButton>
+        </div>
+      )}
+
+      {step === "admin" && (
+        <div style={{ background: "#fff", borderRadius: 18, padding: 20 }}>
+          <button onClick={() => setStep("pick")} style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: "#75807A", fontSize: 13, marginBottom: 12, cursor: "pointer", padding: 0 }}>
+            <ArrowLeft size={14} /> Wapas
+          </button>
+          <p style={{ fontFamily: "'Newsreader', serif", fontSize: 17, margin: "0 0 14px 0", color: "#17221E" }}>Admin Passcode</p>
+          <input value={passcode} onChange={(e) => setPasscode(e.target.value)} placeholder="Passcode" type="password" style={inputStyleFor(LIGHT)} />
+          <p style={{ fontSize: 12, color: "#75807A", marginTop: 8 }}>Demo passcode: <strong>786786</strong></p>
+          {error && <p style={{ color: "#B03434", fontSize: 12.5, marginTop: 4 }}>{error}</p>}
+          <PrimaryButton onClick={submit} style={{ width: "100%", marginTop: 14, justifyContent: "center" }}>Dakhil hon</PrimaryButton>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================== Live session room ============================== */
+
+function LiveRoom({ session, refreshSession, onLeave, currentUser, isHost }) {
+  const [text, setText] = useState("");
+  const [reactions, setReactions] = useState([]);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const t = setInterval(() => refreshSession(session.id), 3000);
+    return () => clearInterval(t);
+  }, [session.id, refreshSession]);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [session.messages?.length]);
+
+  const send = async () => {
+    if (!text.trim()) return;
+    const sessions = await getShared("sessions", []);
+    const idx = sessions.findIndex((s) => s.id === session.id);
+    if (idx === -1) return;
+    sessions[idx].messages = [...(sessions[idx].messages || []), { id: uid(), user: currentUser, text: text.trim(), ts: Date.now(), pinned: false }];
+    await setShared("sessions", sessions);
+    setText("");
+    refreshSession(session.id);
+  };
+
+  const pin = async (msgId) => {
+    const sessions = await getShared("sessions", []);
+    const idx = sessions.findIndex((s) => s.id === session.id);
+    if (idx === -1) return;
+    sessions[idx].messages = sessions[idx].messages.map((m) => ({ ...m, pinned: m.id === msgId }));
+    await setShared("sessions", sessions);
+    refreshSession(session.id);
+  };
+
+  const endSession = async () => {
+    const sessions = await getShared("sessions", []);
+    const idx = sessions.findIndex((s) => s.id === session.id);
+    if (idx === -1) return;
+    sessions[idx].status = "ended";
+    await setShared("sessions", sessions);
+    onLeave();
+  };
+
+  const react = (emoji) => {
+    const id = uid();
+    setReactions((r) => [...r, { id, emoji, left: 10 + Math.random() * 70 }]);
+    setTimeout(() => setReactions((r) => r.filter((x) => x.id !== id)), 1800);
+  };
+
+  const copyLink = () => {
+    if (navigator.clipboard) navigator.clipboard.writeText(`IlmLive Live: "${session.title}" — abhi join karein!`);
+  };
+
+  const pinned = (session.messages || []).find((m) => m.pinned);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, maxWidth: 480, margin: "0 auto", background: "#17221E", zIndex: 20, display: "flex", flexDirection: "column" }}>
+      <div style={{ padding: "16px 16px 12px", background: "linear-gradient(180deg,#0F221D,#17221E)", borderBottom: "1px solid #26332D" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <button onClick={onLeave} style={{ background: "none", border: "none", color: "#CFE3DC", cursor: "pointer", padding: 0 }}><ArrowLeft size={18} /></button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button onClick={copyLink} style={{ background: "none", border: "none", color: "#CFE3DC", cursor: "pointer", padding: 0, display: "flex" }} title="Share session"><Share2 size={16} /></button>
+            <LivePulse />
+          </div>
+        </div>
+        <p style={{ fontFamily: "'Newsreader', serif", color: "#fff", fontSize: 17, margin: "4px 0 2px 0" }}>{session.title}</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, color: "#9CB0A8" }}>
+          <span>{session.type === "debate" ? <><Swords size={12} style={{ verticalAlign: -2 }} /> {session.host} vs {session.opponent}</> : <>Mikspeaker: {session.host}</>}</span>
+          <span>· {session.viewers} dekh rahe hain</span>
+        </div>
+      </div>
+
+      {pinned && (
+        <div style={{ margin: "10px 14px 0", background: "#F8EFD9", borderRadius: 10, padding: "8px 12px", display: "flex", gap: 8 }}>
+          <Star size={14} color="#8A6A1E" style={{ flexShrink: 0, marginTop: 2 }} />
+          <p style={{ fontSize: 13, color: "#5A430F", margin: 0 }}><strong>{pinned.user}:</strong> {pinned.text}</p>
+        </div>
+      )}
+
+      <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "12px 14px" }}>
+        {(session.messages || []).length === 0 && (
+          <p style={{ textAlign: "center", color: "#75807A", fontSize: 13, marginTop: 30 }}>Abhi tak koi paigham nahi. Pehla sawal ya salam bhejein.</p>
+        )}
+        {(session.messages || []).map((m) => (
+          <div key={m.id} style={{ marginBottom: 10, display: "flex", flexDirection: "column", alignItems: m.user === currentUser ? "flex-end" : "flex-start" }}>
+            <div onClick={() => isHost && pin(m.id)} style={{ maxWidth: "80%", background: m.user === currentUser ? "#0B6E55" : "#232E29", color: "#fff", padding: "8px 12px", borderRadius: 14, fontSize: 13.5, cursor: isHost ? "pointer" : "default" }}>
+              {m.user !== currentUser && <div style={{ fontSize: 10.5, color: "#8FBBAC", marginBottom: 2, fontWeight: 700 }}>{m.user}</div>}
+              {m.text}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ position: "relative", height: 0 }}>
+        {reactions.map((r) => (
+          <span key={r.id} className="float-up" style={{ position: "absolute", bottom: 0, left: `${r.left}%`, fontSize: 22 }}>{r.emoji}</span>
+        ))}
+      </div>
+
+      <div style={{ padding: 12, borderTop: "1px solid #26332D", display: "flex", gap: 8, alignItems: "center", background: "#17221E" }}>
+        <div style={{ display: "flex", gap: 4 }}>
+          {["❤️", "🤲", "👍"].map((e) => (
+            <button key={e} onClick={() => react(e)} style={{ background: "#232E29", border: "none", borderRadius: 999, width: 34, height: 34, fontSize: 16, cursor: "pointer" }}>{e}</button>
+          ))}
+        </div>
+        <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Paigham likhein…" style={{ flex: 1, background: "#232E29", border: "none", borderRadius: 999, padding: "10px 14px", color: "#fff", fontSize: 13.5 }} />
+        <button onClick={send} style={{ width: 38, height: 38, borderRadius: 999, background: "#0B6E55", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+          <Send size={16} color="#fff" />
+        </button>
+      </div>
+
+      {isHost && (
+        <div style={{ padding: "0 12px 12px" }}>
+          <GhostButton onClick={endSession} icon={<Square size={13} />} style={{ width: "100%", justifyContent: "center", background: "#232E29", color: "#F0B4B4", border: "1px solid #3A2626" }}>
+            Session Khatam Karein
+          </GhostButton>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================== User panel — home ============================== */
+
+const CAROUSEL_SLIDES = [
+  { title: "Kisi bhi Mufti se Sawal Poochein", sub: "Aqeedah se Muamlaat tak — jawab seedha ulama se", icon: <MessageCircle size={22} />, grad: "linear-gradient(135deg,#0B6E55,#0E8C6C)" },
+  { title: "Live Munazray Dekhein", sub: "Ulama ke darmiyan live ilmi guftagu join karein", icon: <Swords size={22} />, grad: "linear-gradient(135deg,#5B3F91,#7A5BC0)" },
+  { title: "Premium se Priority Payein", sub: "Aapka sawal sabse pehle mufti tak pohanche", icon: <Crown size={22} />, grad: "linear-gradient(135deg,#8A6A1E,#C89B3C)" },
+];
+
+function HomeCarousel() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((v) => (v + 1) % CAROUSEL_SLIDES.length), 4000);
+    return () => clearInterval(t);
+  }, []);
+  const s = CAROUSEL_SLIDES[i];
+  return (
+    <div style={{ borderRadius: 16, padding: 18, marginBottom: 16, background: s.grad, color: "#fff", position: "relative", overflow: "hidden", minHeight: 84 }}>
+      <div key={i} className="carousel-fade" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.icon}</div>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 14.5 }}>{s.title}</div>
+          <div style={{ fontSize: 12, opacity: 0.9, marginTop: 2 }}>{s.sub}</div>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 5, marginTop: 12 }}>
+        {CAROUSEL_SLIDES.map((_, idx) => (
+          <span key={idx} style={{ width: idx === i ? 16 : 6, height: 6, borderRadius: 999, background: idx === i ? "#fff" : "rgba(255,255,255,0.4)", transition: "width .3s" }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function QuestionCard({ q, onLike, bookmarked, onBookmark, onRate, userHasRated, onShare }) {
+  const t = useTheme();
+  return (
+    <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, padding: 14, marginBottom: 10, boxShadow: t.shadow }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <Badge tone="brand"><Tag size={10} /> {q.category}</Badge>
+        {q.status === "pending" ? <Badge tone="grey"><Hourglass size={10} /> Pending</Badge> : <Badge tone="gold"><BadgeCheck size={10} /> {q.muftiName}</Badge>}
+      </div>
+      <p style={{ fontFamily: "'Newsreader', serif", fontSize: 15, color: t.text, margin: "0 0 6px 0" }}>{q.question}</p>
+      {q.answer && <p style={{ fontSize: 13.5, color: t.sub === "#75807A" ? "#3A443F" : t.text, margin: "0 0 8px 0", lineHeight: 1.55 }}>{q.answer}</p>}
+      {q.status === "answered" && (
+        <div style={{ marginBottom: 8 }}>
+          <StarRating value={onRate ? avgRating(q) : avgRating(q)} count={q.ratingCount} interactive={!!onRate && !userHasRated} onRate={onRate ? (n) => onRate(q.id, n) : undefined} />
+          {userHasRated && <span style={{ fontSize: 10.5, color: t.sub2, marginLeft: 6 }}>Aapne rate kar diya</span>}
+        </div>
+      )}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 11.5, color: t.sub2 }}>{timeAgo(q.createdAt)}</span>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {onLike && (
+            <button onClick={() => onLike(q.id)} style={{ background: "none", border: "none", display: "flex", alignItems: "center", gap: 4, color: t.sub, fontSize: 12.5, cursor: "pointer" }}>
+              <ThumbsUp size={13} /> {q.likes}
+            </button>
+          )}
+          {onShare && (
+            <button onClick={() => onShare(q)} style={{ background: "none", border: "none", color: t.sub, cursor: "pointer", display: "flex" }}>
+              <Share2 size={13} />
+            </button>
+          )}
+          {onBookmark && (
+            <button onClick={() => onBookmark(q.id)} style={{ background: "none", border: "none", color: bookmarked ? "#0B6E55" : t.sub, cursor: "pointer", display: "flex" }}>
+              <Bookmark size={13} fill={bookmarked ? "#0B6E55" : "none"} />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CategoryChips({ categories, active, onPick, tone = "brand" }) {
+  const t = useTheme();
+  const activeBg = tone === "gold" ? "#F8EFD9" : "#E4F2EE";
+  const activeText = tone === "gold" ? "#8A6A1E" : "#0B6E55";
+  const activeBorder = tone === "gold" ? "1.5px solid #8A6A1E" : "1.5px solid #0B6E55";
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+      <button onClick={() => onPick("Sab")} style={{ padding: "6px 12px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, cursor: "pointer", border: active === "Sab" ? activeBorder : `1px solid ${t.border}`, background: active === "Sab" ? activeBg : t.surface, color: active === "Sab" ? activeText : t.sub }}>Sab</button>
+      {categories.map((c) => (
+        <button key={c} onClick={() => onPick(c)} style={{ padding: "6px 12px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, cursor: "pointer", border: active === c ? activeBorder : `1px solid ${t.border}`, background: active === c ? activeBg : t.surface, color: active === c ? activeText : t.sub }}>
+          {c}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function UserHome({ shared, onJoin, onLike, onBookmark, onRate, profile, onShare }) {
+  const t = useTheme();
+  const [search, setSearch] = useState("");
+  const [cat, setCat] = useState("Sab");
+  const [showFilters, setShowFilters] = useState(false);
+  const live = shared.sessions.filter((s) => s.status === "live");
+  let answered = shared.questions.filter((q) => q.status === "answered");
+  if (cat !== "Sab") answered = answered.filter((q) => q.category === cat);
+  if (search.trim()) {
+    const s = search.trim().toLowerCase();
+    answered = answered.filter((q) => q.question.toLowerCase().includes(s) || (q.answer || "").toLowerCase().includes(s) || (q.muftiName || "").toLowerCase().includes(s));
+  }
+  const trending = [...answered].sort((a, b) => b.likes - a.likes).slice(0, 8);
+
+  return (
+    <div>
+      <HomeCarousel />
+      {shared.announcement && (
+        <div style={{ background: "linear-gradient(135deg,#0B6E55,#0E8C6C)", color: "#fff", borderRadius: 12, padding: "10px 14px", marginBottom: 14, display: "flex", gap: 8, alignItems: "center", fontSize: 13 }}>
+          <Megaphone size={15} style={{ flexShrink: 0 }} /> {shared.announcement}
+        </div>
+      )}
+
+      <SectionTitle icon={<Radio size={15} />} text="Live Abhi" />
+      {live.length === 0 && <p style={{ fontSize: 13, color: t.sub, marginBottom: 16 }}>Is waqt koi live session nahi. Munazra tab dekhte rahein.</p>}
+      {live.map((s) => (
+        <button key={s.id} onClick={() => onJoin(s)} style={{ display: "flex", width: "100%", textAlign: "left", alignItems: "center", gap: 12, background: t.surface, border: `1px solid ${t.border}`, borderRadius: 14, padding: 14, marginBottom: 10, cursor: "pointer" }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: s.type === "debate" ? "#EFEAF8" : "#E4F2EE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            {s.type === "debate" ? <Swords size={20} color="#5B3F91" /> : <MessageCircle size={20} color="#0B6E55" />}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: t.text }}>{s.title}</div>
+            <div style={{ fontSize: 12, color: t.sub, marginTop: 2 }}>{s.host}{s.opponent ? ` vs ${s.opponent}` : ""} · {s.viewers} dekh rahe</div>
+          </div>
+          <LivePulse />
+        </button>
+      ))}
+
+      <SectionTitle
+        icon={<TrendingUp size={15} />}
+        text="Mash'hoor Masail"
+        style={{ marginTop: 18 }}
+        action={
+          <button onClick={() => setShowFilters((v) => !v)} style={{ background: "none", border: "none", cursor: "pointer", color: showFilters ? "#0B6E55" : t.sub, display: "flex", alignItems: "center", gap: 3, fontSize: 12 }}>
+            <Filter size={14} /> Filter
+          </button>
+        }
+      />
+      {showFilters && (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ position: "relative", marginBottom: 10 }}>
+            <Search size={14} color={t.sub} style={{ position: "absolute", left: 12, top: 12 }} />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Masail mein talash karein…" style={{ ...inputStyleFor(t), paddingLeft: 32 }} />
+          </div>
+          <CategoryChips categories={shared.categories} active={cat} onPick={setCat} />
+        </div>
+      )}
+      {trending.length === 0 && <EmptyState icon={<MessageCircle size={26} />} text="Is filter ke mutabiq koi jawab nahi mila." />}
+      {trending.map((q) => (
+        <QuestionCard
+          key={q.id}
+          q={q}
+          onLike={onLike}
+          bookmarked={profile.bookmarks.includes(q.id)}
+          onBookmark={onBookmark}
+          onRate={onRate}
+          userHasRated={profile.ratedQuestions?.includes(q.id)}
+          onShare={onShare}
+        />
+      ))}
+    </div>
+  );
+}
+
+function UserAsk({ categories, currentUser, premium, onSubmitted }) {
+  const t = useTheme();
+  const [category, setCategory] = useState(categories[0]);
+  const [question, setQuestion] = useState("");
+  const [sent, setSent] = useState(false);
+
+  const submit = async () => {
+    if (!question.trim()) return;
+    const questions = await getShared("questions", []);
+    const newQ = { id: uid(), user: currentUser, premium, category, question: question.trim(), answer: "", muftiName: "", status: "pending", likes: 0, flagged: false, ratingSum: 0, ratingCount: 0, createdAt: Date.now() };
+    await setShared("questions", [newQ, ...questions]);
+    setQuestion("");
+    setSent(true);
+    onSubmitted();
+    setTimeout(() => setSent(false), 2500);
+  };
+
+  return (
+    <div>
+      <SectionTitle icon={<MessageCircle size={15} />} text="Naya Sawal Poochein" />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+        {categories.map((c) => (
+          <button key={c} onClick={() => setCategory(c)} style={{ padding: "6px 12px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, cursor: "pointer", border: category === c ? "1.5px solid #0B6E55" : `1px solid ${t.border}`, background: category === c ? "#E4F2EE" : t.surface, color: category === c ? "#0B6E55" : t.sub }}>
+            {c}
+          </button>
+        ))}
+      </div>
+      <textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Apna sawal tafseel se likhein…" style={{ ...inputStyleFor(t), minHeight: 110, resize: "vertical" }} />
+      {premium && <p style={{ fontSize: 12, color: "#8A6A1E", marginTop: 8 }}><Crown size={12} style={{ verticalAlign: -2 }} /> Premium member — aapka sawal priority queue mein jayega.</p>}
+      <PrimaryButton onClick={submit} style={{ marginTop: 12 }} icon={<Send size={14} />}>Sawal Bhejein</PrimaryButton>
+      {sent && <p style={{ color: "#0B6E55", fontSize: 13, marginTop: 8 }}>Sawal bhej diya gaya — jald jawab milega.</p>}
+    </div>
+  );
+}
+
+function SessionRow({ s, onJoin, disabled, ended }) {
+  const t = useTheme();
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, padding: 12, marginBottom: 8, opacity: disabled ? 0.75 : 1 }}>
+      <div style={{ width: 38, height: 38, borderRadius: 10, background: s.type === "debate" ? "#EFEAF8" : "#E4F2EE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        {s.type === "debate" ? <Swords size={17} color="#5B3F91" /> : <MessageCircle size={17} color="#0B6E55" />}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 700, fontSize: 13.5, color: t.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.title}</div>
+        <div style={{ fontSize: 11.5, color: t.sub }}>{s.host}{s.opponent ? ` vs ${s.opponent}` : ""}</div>
+      </div>
+      {ended ? <Badge tone="grey">ختم</Badge> : disabled ? <Badge tone="purple">Schedule</Badge> : (
+        <button onClick={() => onJoin(s)} style={{ background: "#0B6E55", color: "#fff", border: "none", borderRadius: 999, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Join</button>
+      )}
+    </div>
+  );
+}
+
+function UserMunazra({ sessions, onJoin }) {
+  const t = useTheme();
+  const live = sessions.filter((s) => s.status === "live");
+  const scheduled = sessions.filter((s) => s.status === "scheduled");
+  const ended = sessions.filter((s) => s.status === "ended").slice(0, 5);
+  return (
+    <div>
+      <SectionTitle icon={<Swords size={15} />} text="Live ab" />
+      {live.length === 0 && <p style={{ fontSize: 13, color: t.sub }}>Koi live session nahi.</p>}
+      {live.map((s) => <SessionRow key={s.id} s={s} onJoin={onJoin} />)}
+
+      <SectionTitle icon={<Clock size={15} />} text="Schedule" style={{ marginTop: 18 }} />
+      {scheduled.length === 0 && <p style={{ fontSize: 13, color: t.sub }}>Filhaal koi schedule nahi.</p>}
+      {scheduled.map((s) => <SessionRow key={s.id} s={s} disabled />)}
+
+      <SectionTitle icon={<Star size={15} />} text="Guzashta Sessions" style={{ marginTop: 18 }} />
+      {ended.length === 0 && <p style={{ fontSize: 13, color: t.sub }}>Abhi koi guzashta session nahi.</p>}
+      {ended.map((s) => <SessionRow key={s.id} s={s} ended />)}
+    </div>
+  );
+}
+
+function UserPremium({ premium, onUpgrade }) {
+  const [yearly, setYearly] = useState(true);
+  const t = useTheme();
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#1A2E27,#0B6E55)", borderRadius: 18, padding: 22, textAlign: "center", color: "#fff", marginBottom: 16, position: "relative", overflow: "hidden" }}>
+        <div className="gold-shimmer" />
+        <Crown size={30} color="#F8EFD9" style={{ marginBottom: 8 }} />
+        <div style={{ fontFamily: "'Newsreader', serif", fontStyle: "italic", fontSize: 20 }}>{premium ? "Aap Premium Hain" : "IlmLive Premium"}</div>
+        <p style={{ fontSize: 12.5, color: "#CFE3DC", marginTop: 6 }}>Priority sawal, ad-free tajurba, khaas sessions</p>
+      </div>
+
+      {!premium && (
+        <>
+          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+            <button onClick={() => setYearly(false)} style={{ flex: 1, padding: "10px", borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: "pointer", border: !yearly ? "1.5px solid #0B6E55" : `1px solid ${t.border}`, background: !yearly ? "#E4F2EE" : t.surface, color: !yearly ? "#0B6E55" : t.sub }}>Mahana — Rs 299</button>
+            <button onClick={() => setYearly(true)} style={{ flex: 1, padding: "10px", borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: "pointer", border: yearly ? "1.5px solid #0B6E55" : `1px solid ${t.border}`, background: yearly ? "#E4F2EE" : t.surface, color: yearly ? "#0B6E55" : t.sub }}>Salana — Rs 2499 <span style={{ fontSize: 10 }}>(save 30%)</span></button>
+          </div>
+          {["Priority sawal queue", "Ad-free tajurba", "Khaas scholar sessions tak rasai", "Premium badge profile par"].map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontSize: 13.5, color: t.text }}><CheckCircle2 size={15} color="#0B6E55" /> {f}</div>
+          ))}
+          <PrimaryButton onClick={onUpgrade} style={{ width: "100%", justifyContent: "center", marginTop: 12 }} icon={<Crown size={14} />}>Abhi Upgrade Karein</PrimaryButton>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ============================== Scholar Leaderboard ============================== */
+
+function ScholarLeaderboard({ shared }) {
+  const t = useTheme();
+  const approved = shared.muftis.filter((m) => m.status === "approved");
+  const withStats = approved.map((m) => {
+    const theirQs = shared.questions.filter((q) => q.muftiName === m.name && q.status === "answered");
+    const sum = theirQs.reduce((a, q) => a + (q.ratingSum || 0), 0);
+    const cnt = theirQs.reduce((a, q) => a + (q.ratingCount || 0), 0);
+    return { ...m, avg: cnt ? sum / cnt : 0, ratingCount: cnt };
+  }).sort((a, b) => (b.avg - a.avg) || ((b.questionsAnswered || 0) - (a.questionsAnswered || 0)));
+
+  const medalColor = ["#C89B3C", "#A9A9A9", "#B08D57"];
+
+  return (
+    <div>
+      <SectionTitle icon={<Trophy size={15} />} text="Ulama Leaderboard" />
+      <p style={{ fontSize: 12.5, color: t.sub, marginBottom: 14 }}>Users ki rating aur jawabaat ki bunyad par.</p>
+      {withStats.length === 0 && <EmptyState icon={<Trophy size={26} />} text="Abhi koi approved scholar nahi." />}
+      {withStats.map((m, i) => (
+        <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 12, background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, padding: 12, marginBottom: 8 }}>
+          <div style={{ width: 30, textAlign: "center", flexShrink: 0 }}>
+            {i < 3 ? <Medal size={20} color={medalColor[i]} /> : <span style={{ fontSize: 13, color: t.sub2, fontWeight: 700 }}>{i + 1}</span>}
+          </div>
+          <div style={{ width: 40, height: 40, borderRadius: 999, background: "#F8EFD9", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Newsreader', serif", fontSize: 16, color: "#8A6A1E", flexShrink: 0 }}>
+            {m.name.charAt(0).toUpperCase()}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 13.5, color: t.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.name}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+              <StarRating value={m.avg} count={m.ratingCount} size={12} />
+              <span style={{ fontSize: 11, color: t.sub2 }}>· {m.questionsAnswered || 0} jawab</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ============================== Bayanaat ============================== */
+
+const LECTURES = [
+  { id: 1, title: "Sabr ki Ahmiyat", scholar: "Mufti Abdullah", duration: "18:32" },
+  { id: 2, title: "Namaz ke Fazail", scholar: "Mufti Zubair", duration: "24:10" },
+  { id: 3, title: "Sunnat ke Mutabiq Zindagi", scholar: "Mufti Anas", duration: "31:05" },
+  { id: 4, title: "Waldain ke Huqooq", scholar: "Mufti Salman", duration: "15:47" },
+  { id: 5, title: "Ikhlaq-e-Nabvi ﷺ", scholar: "Mufti Bilal", duration: "22:19" },
+];
+
+function LectureCard({ l }) {
+  const t = useTheme();
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    if (!playing) return;
+    const tm = setInterval(() => setProgress((p) => (p >= 100 ? 0 : p + 2)), 300);
+    return () => clearInterval(tm);
+  }, [playing]);
+  return (
+    <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, padding: 14, marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <button onClick={() => setPlaying((p) => !p)} style={{ width: 42, height: 42, borderRadius: 999, background: "#E4F2EE", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+          {playing ? <Pause size={17} color="#0B6E55" /> : <Play size={17} color="#0B6E55" />}
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 700, fontSize: 14, color: t.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.title}</div>
+          <div style={{ fontSize: 11.5, color: t.sub }}>{l.scholar} · {l.duration}</div>
+        </div>
+        {playing && (
+          <div style={{ display: "flex", alignItems: "flex-end", height: 16, flexShrink: 0 }}>
+            {[0, 0.15, 0.3].map((d, i) => <span key={i} className="eq-bar" style={{ animationDelay: `${d}s` }} />)}
+          </div>
+        )}
+      </div>
+      {playing && (
+        <div style={{ height: 4, background: "#EFEEE8", borderRadius: 999, marginTop: 10, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${progress}%`, background: "#0B6E55", borderRadius: 999, transition: "width .3s linear" }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BayanaatTab() {
+  return (
+    <div>
+      <SectionTitle icon={<Headphones size={15} />} text="Bayanaat" />
+      <p style={{ fontSize: 12.5, color: "#75807A", marginBottom: 14 }}>Muftiyan-e-Kiram ke mukhtasar audio bayanaat suniye.</p>
+      {LECTURES.map((l) => <LectureCard key={l.id} l={l} />)}
+    </div>
+  );
+}
+
+/* ============================== Toast ============================== */
+
+function Toast({ text, onDone }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 4000);
+    return () => clearTimeout(t);
+  }, [onDone]);
+  return (
+    <div className="toast-in" style={{ position: "fixed", top: 14, left: 14, right: 14, maxWidth: 448, margin: "0 auto", zIndex: 30, background: "#17221E", color: "#fff", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10, boxShadow: "0 10px 24px -8px rgba(0,0,0,0.4)" }}>
+      <Bell size={16} color="#F8EFD9" style={{ flexShrink: 0 }} />
+      <span style={{ fontSize: 13 }}>{text}</span>
+    </div>
+  );
+}
+
+/* ============================== User panel root ============================== */
+
+function UserPanel({ shared, profile, setProfile, reload, dark, onToggleDark }) {
+  const [tab, setTab] = useState("home");
+  const [activeSession, setActiveSession] = useState(null);
+  const [toast, setToast] = useState(null);
+  const seenRef = useRef(null);
+  useEffect(() => {
+    const mineAnswered = shared.questions.filter((q) => q.user === profile.name && q.status === "answered").map((q) => q.id);
+    if (seenRef.current === null) {
+      seenRef.current = new Set(mineAnswered);
+      return;
+    }
+    const newlyAnswered = mineAnswered.find((id) => !seenRef.current.has(id));
+    if (newlyAnswered) setToast("Aapke sawal ka jawab agaya hai — Profile mein dekhein.");
+    seenRef.current = new Set(mineAnswered);
+  }, [shared.questions, profile.name]);
+
+  const refreshSession = async (id) => {
+    const sessions = await getShared("sessions", []);
+    const found = sessions.find((s) => s.id === id);
+    if (found) setActiveSession(found);
+  };
+
+  const joinSession = async (s) => {
+    const sessions = await getShared("sessions", []);
+    const idx = sessions.findIndex((x) => x.id === s.id);
+    if (idx !== -1) { sessions[idx].viewers = (sessions[idx].viewers || 0) + 1; await setShared("sessions", sessions); }
+    setActiveSession(sessions[idx] || s);
+  };
+
+  const likeQuestion = async (id) => {
+    const questions = await getShared("questions", []);
+    const idx = questions.findIndex((q) => q.id === id);
+    if (idx !== -1) { questions[idx].likes += 1; await setShared("questions", questions); reload(); }
+  };
+
+  const toggleBookmark = async (id) => {
+    const bookmarks = profile.bookmarks.includes(id) ? profile.bookmarks.filter((b) => b !== id) : [...profile.bookmarks, id];
+    const next = { ...profile, bookmarks };
+    setProfile(next);
+    await setPersonal("profile", next);
+  };
+
+  const rateQuestion = async (id, stars) => {
+    if (profile.ratedQuestions?.includes(id)) return;
+    const questions = await getShared("questions", []);
+    const idx = questions.findIndex((q) => q.id === id);
+    if (idx === -1) return;
+    questions[idx].ratingSum = (questions[idx].ratingSum || 0) + stars;
+    questions[idx].ratingCount = (questions[idx].ratingCount || 0) + 1;
+    await setShared("questions", questions);
+    const next = { ...profile, ratedQuestions: [...(profile.ratedQuestions || []), id] };
+    setProfile(next);
+    await setPersonal("profile", next);
+    reload();
+  };
+
+  const upgrade = async () => {
+    const next = { ...profile, premium: true };
+    setProfile(next);
+    await setPersonal("profile", next);
+  };
+
+  const myQuestions = shared.questions.filter((q) => q.user === profile.name);
+  const bookmarkedQs = shared.questions.filter((q) => profile.bookmarks.includes(q.id));
+
+  const notifications = [
+    ...(shared.announcement ? [{ id: "ann", icon: <Megaphone size={13} />, text: shared.announcement, time: "Announcement" }] : []),
+    ...shared.sessions.filter((s) => s.status === "live").slice(0, 3).map((s) => ({ id: s.id, icon: <Radio size={13} />, text: `${s.title} — abhi live hai`, time: "Live" })),
+    ...myQuestions.filter((q) => q.status === "answered").sort((a, b) => b.createdAt - a.createdAt).slice(0, 5).map((q) => ({ id: q.id, icon: <CheckCircle2 size={13} />, text: `Aapke sawal "${q.question.slice(0, 40)}${q.question.length > 40 ? "…" : ""}" ka jawab mil gaya`, time: timeAgo(q.createdAt) })),
+  ];
+
+  const TABS = [
+    { id: "home", label: "Home", icon: <Radio size={17} /> },
+    { id: "ask", label: "Poocho", icon: <MessageCircle size={17} /> },
+    { id: "munazra", label: "Munazra", icon: <Swords size={17} /> },
+    { id: "ulama", label: "Ulama", icon: <Trophy size={17} /> },
+    { id: "bayanaat", label: "Bayanaat", icon: <Headphones size={17} /> },
+    { id: "premium", label: "Premium", icon: <Crown size={17} /> },
+    { id: "profile", label: "Profile", icon: <User size={17} /> },
+  ];
+
+  return (
+    <div style={{ paddingBottom: 74 }}>
+      {toast && <Toast text={toast} onDone={() => setToast(null)} />}
+      <div style={{ padding: "16px 16px 6px" }}>
+        <TopBar title="IlmLive" icon={<BookOpenText size={18} color="#0B6E55" />} notifications={notifications} dark={dark} onToggleDark={onToggleDark} onRefresh={reload} />
+        {tab === "home" && <UserHome shared={shared} onJoin={joinSession} onLike={likeQuestion} onBookmark={toggleBookmark} onRate={rateQuestion} profile={profile} onShare={shareText} />}
+        {tab === "ask" && <UserAsk categories={shared.categories} currentUser={profile.name} premium={profile.premium} onSubmitted={reload} />}
+        {tab === "munazra" && <UserMunazra sessions={shared.sessions} onJoin={joinSession} />}
+        {tab === "ulama" && <ScholarLeaderboard shared={shared} />}
+        {tab === "bayanaat" && <BayanaatTab />}
+        {tab === "premium" && <UserPremium premium={profile.premium} onUpgrade={upgrade} />}
+        {tab === "profile" && (
+          <UserProfileWrapper profile={profile} myQuestions={myQuestions} bookmarked={bookmarkedQs} likeQuestion={likeQuestion} toggleBookmark={toggleBookmark} onRate={rateQuestion} onShare={shareText} />
+        )}
+      </div>
+
+      <BottomNav tabs={TABS} tab={tab} setTab={setTab} />
+
+      {activeSession && (
+        <LiveRoom session={activeSession} refreshSession={refreshSession} onLeave={() => { setActiveSession(null); reload(); }} currentUser={profile.name} isHost={false} />
+      )}
+    </div>
+  );
+}
+
+function BottomNav({ tabs, tab, setTab }) {
+  const t = useTheme();
+  return (
+    <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, maxWidth: 480, margin: "0 auto", background: t.surface, borderTop: `1px solid ${t.border}`, display: "flex", overflowX: "auto", padding: "6px 2px" }}>
+      {tabs.map((tb) => (
+        <button key={tb.id} onClick={() => setTab(tb.id)} style={{ flex: "1 0 auto", minWidth: 58, display: "flex", flexDirection: "column", alignItems: "center", gap: 2, background: "none", border: "none", cursor: "pointer", padding: "6px 2px", color: tab === tb.id ? "#0B6E55" : t.sub2 }}>
+          {tb.icon}
+          <span style={{ fontSize: 10, fontWeight: 600 }}>{tb.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function UserProfileWrapper({ profile, myQuestions, bookmarked, likeQuestion, toggleBookmark, onRate, onShare }) {
+  const t = useTheme();
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+        <div style={{ width: 54, height: 54, borderRadius: 999, background: "#E4F2EE", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Newsreader', serif", fontSize: 22, color: "#0B6E55" }}>
+          {profile.name.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: t.text, display: "flex", alignItems: "center", gap: 6 }}>
+            {profile.name} {profile.premium && <Crown size={14} color="#C89B3C" />}
+          </div>
+          <div style={{ fontSize: 12.5, color: t.sub }}>{profile.premium ? "Premium Member" : "Free Member"}</div>
+        </div>
+      </div>
+      <SectionTitle text="Mere Sawal" />
+      {myQuestions.length === 0 && <p style={{ fontSize: 13, color: t.sub, marginBottom: 16 }}>Aapne abhi tak koi sawal nahi poocha.</p>}
+      {myQuestions.map((q) => <QuestionCard key={q.id} q={q} onLike={likeQuestion} bookmarked={false} onRate={onRate} onShare={onShare} />)}
+      <SectionTitle text="Save kiye hue Masail" style={{ marginTop: 16 }} />
+      {bookmarked.length === 0 && <p style={{ fontSize: 13, color: t.sub }}>Koi masla save nahi kiya.</p>}
+      {bookmarked.map((q) => <QuestionCard key={q.id} q={q} onLike={likeQuestion} bookmarked onBookmark={toggleBookmark} onRate={onRate} onShare={onShare} />)}
+    </div>
+  );
+}
+
+/* ============================== Scholar (Mufti) panel ============================== */
+
+function AnswerRow({ q, onAnswer }) {
+  const t = useTheme();
+  const [text, setText] = useState("");
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, padding: 14, marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+        <Badge tone="brand"><Tag size={10} /> {q.category}</Badge>
+        {q.premium && <Badge tone="gold"><Crown size={10} /> Priority</Badge>}
+      </div>
+      <p style={{ fontFamily: "'Newsreader', serif", fontSize: 15, color: t.text, margin: "0 0 4px 0" }}>{q.question}</p>
+      <p style={{ fontSize: 11.5, color: t.sub2, marginBottom: 8 }}>{q.user} · {timeAgo(q.createdAt)}</p>
+      {!open ? (
+        <GhostButton onClick={() => setOpen(true)} icon={<MessageCircle size={13} />}>Jawab Dein</GhostButton>
+      ) : (
+        <div>
+          <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Jawab likhein…" style={{ ...inputStyleFor(t), minHeight: 80 }} />
+          <PrimaryButton onClick={() => { onAnswer(q.id, text); setOpen(false); setText(""); }} style={{ marginTop: 8 }}>Shaya Karein</PrimaryButton>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function UploadMasla({ categories, muftiName, onDone }) {
+  const t = useTheme();
+  const [category, setCategory] = useState(categories[0]);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [done, setDone] = useState(false);
+
+  const submit = async () => {
+    if (!question.trim() || !answer.trim()) return;
+    const questions = await getShared("questions", []);
+    const q = { id: uid(), user: muftiName, premium: false, category, question: question.trim(), answer: answer.trim(), muftiName, status: "answered", likes: 0, flagged: false, ratingSum: 0, ratingCount: 0, createdAt: Date.now() };
+    await setShared("questions", [q, ...questions]);
+    setQuestion(""); setAnswer(""); setDone(true); onDone();
+    setTimeout(() => setDone(false), 2500);
+  };
+
+  return (
+    <div>
+      <SectionTitle icon={<PlusCircle size={15} />} text="Naya Masla Upload Karein" />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+        {categories.map((c) => (
+          <button key={c} onClick={() => setCategory(c)} style={{ padding: "6px 12px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, cursor: "pointer", border: category === c ? "1.5px solid #8A6A1E" : `1px solid ${t.border}`, background: category === c ? "#F8EFD9" : t.surface, color: category === c ? "#8A6A1E" : t.sub }}>{c}</button>
+        ))}
+      </div>
+      <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Sawal / Masla" style={{ ...inputStyleFor(t), marginBottom: 10 }} />
+      <textarea value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Mukammal jawab, hawala ke sath…" style={{ ...inputStyleFor(t), minHeight: 120 }} />
+      <PrimaryButton onClick={submit} style={{ marginTop: 12 }} icon={<Sparkles size={14} />}>Shaya Karein</PrimaryButton>
+      {done && <p style={{ color: "#0B6E55", fontSize: 13, marginTop: 8 }}>Masla shaya ho gaya.</p>}
+    </div>
+  );
+}
+
+function StartLive({ onStart }) {
+  const t = useTheme();
+  const [title, setTitle] = useState("");
+  const [type, setType] = useState("qa");
+  const [opponent, setOpponent] = useState("");
+  return (
+    <div>
+      <SectionTitle icon={<Radio size={15} />} text="Naya Live Session Shuru Karein" />
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <button onClick={() => setType("qa")} style={{ flex: 1, padding: 10, borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: "pointer", border: type === "qa" ? "1.5px solid #0B6E55" : `1px solid ${t.border}`, background: type === "qa" ? "#E4F2EE" : t.surface, color: type === "qa" ? "#0B6E55" : t.sub }}>Live Q&amp;A</button>
+        <button onClick={() => setType("debate")} style={{ flex: 1, padding: 10, borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: "pointer", border: type === "debate" ? "1.5px solid #5B3F91" : `1px solid ${t.border}`, background: type === "debate" ? "#EFEAF8" : t.surface, color: type === "debate" ? "#5B3F91" : t.sub }}>Munazra</button>
+      </div>
+      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Session ka unwan" style={{ ...inputStyleFor(t), marginBottom: 10 }} />
+      {type === "debate" && <input value={opponent} onChange={(e) => setOpponent(e.target.value)} placeholder="Doosray aalim ka naam" style={{ ...inputStyleFor(t), marginBottom: 10 }} />}
+      <PrimaryButton onClick={() => onStart(title, type, opponent)} icon={<Play size={14} />}>Live Chalayein</PrimaryButton>
+    </div>
+  );
+}
+
+function StatBox({ label, value }) {
+  const t = useTheme();
+  const n = useCountUp(value);
+  return (
+    <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, padding: 14 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: t.sub }}>{label}</div>
+      <div style={{ fontFamily: "'Newsreader', serif", fontSize: 26, color: t.text, marginTop: 4 }}>{n}</div>
+    </div>
+  );
+}
+
+function ScholarPanel({ shared, profile, reload, dark, onToggleDark }) {
+  const t = useTheme();
+  const [tab, setTab] = useState("queue");
+  const me = shared.muftis.find((m) => m.name === profile.name);
+  const [activeSession, setActiveSession] = useState(null);
+
+  const refreshSession = async (id) => {
+    const sessions = await getShared("sessions", []);
+    const found = sessions.find((s) => s.id === id);
+    if (found) setActiveSession(found);
+  };
+
+  if (!me) {
+    return <EmptyState icon={<Hourglass size={28} />} text="Registration nahi mili — please dobara register karein." />;
+  }
+  if (me.status === "pending") {
+    return (
+      <div style={{ padding: 30, textAlign: "center" }}>
+        <Hourglass size={30} color="#8A6A1E" style={{ marginBottom: 10 }} />
+        <p style={{ fontFamily: "'Newsreader', serif", fontSize: 17, color: t.text }}>Admin ki manzoori ka intezar</p>
+        <p style={{ fontSize: 13, color: t.sub, marginTop: 6 }}>Aapki registration jama ho chuki hai. Admin approve karega to yahan Dashboard khul jayega.</p>
+      </div>
+    );
+  }
+  if (me.status === "suspended") {
+    return <EmptyState icon={<Ban size={28} />} text="Aapka account suspend kar diya gaya hai. Admin se rabta karein." />;
+  }
+
+  const pending = shared.questions.filter((q) => q.status === "pending").sort((a, b) => (b.premium ? 1 : 0) - (a.premium ? 1 : 0));
+  const myAnswered = shared.questions.filter((q) => q.muftiName === profile.name);
+  const mySessions = shared.sessions.filter((s) => s.host === profile.name);
+  const myAvg = (() => {
+    const sum = myAnswered.reduce((a, q) => a + (q.ratingSum || 0), 0);
+    const cnt = myAnswered.reduce((a, q) => a + (q.ratingCount || 0), 0);
+    return cnt ? sum / cnt : 0;
+  })();
+
+  const answerQuestion = async (id, answerText) => {
+    if (!answerText.trim()) return;
+    const questions = await getShared("questions", []);
+    const idx = questions.findIndex((q) => q.id === id);
+    if (idx === -1) return;
+    questions[idx].answer = answerText.trim();
+    questions[idx].status = "answered";
+    questions[idx].muftiName = profile.name;
+    await setShared("questions", questions);
+    const muftis = await getShared("muftis", []);
+    const mIdx = muftis.findIndex((m) => m.name === profile.name);
+    if (mIdx !== -1) { muftis[mIdx].questionsAnswered = (muftis[mIdx].questionsAnswered || 0) + 1; await setShared("muftis", muftis); }
+    reload();
+  };
+
+  const startSession = async (title, type, opponent) => {
+    if (!title.trim()) return;
+    const sessions = await getShared("sessions", []);
+    const s = { id: uid(), title: title.trim(), type, host: profile.name, opponent: opponent.trim(), status: "live", viewers: Math.floor(Math.random() * 12) + 3, featured: false, messages: [], createdAt: Date.now() };
+    await setShared("sessions", [s, ...sessions]);
+    const muftis = await getShared("muftis", []);
+    const mIdx = muftis.findIndex((m) => m.name === profile.name);
+    if (mIdx !== -1) { muftis[mIdx].sessionsHosted = (muftis[mIdx].sessionsHosted || 0) + 1; await setShared("muftis", muftis); }
+    reload();
+    setActiveSession(s);
+  };
+
+  const notifications = [
+    { id: "pend", icon: <Hourglass size={13} />, text: `${pending.length} sawal jawab ke muntazir hain`, time: "Queue" },
+    ...(shared.announcement ? [{ id: "ann", icon: <Megaphone size={13} />, text: shared.announcement, time: "Admin" }] : []),
+  ];
+
+  const TABS = [
+    { id: "queue", label: "Sawalaat" },
+    { id: "upload", label: "Masla Upload" },
+    { id: "live", label: "Live Karein" },
+    { id: "stats", label: "Mera Record" },
+  ];
+
+  return (
+    <div style={{ padding: "16px 16px 40px" }}>
+      <TopBar title="Aalim Panel" icon={<BadgeCheck size={18} color="#8A6A1E" />} notifications={notifications} dark={dark} onToggleDark={onToggleDark} onRefresh={reload} tone="gold" />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div>
+          <div style={{ fontFamily: "'Newsreader', serif", fontSize: 18, color: t.text }}>Assalamualaikum, {profile.name}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+            <Badge tone="gold"><BadgeCheck size={11} /> Approved Scholar</Badge>
+            {myAvg > 0 && <StarRating value={myAvg} size={12} />}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 6, marginBottom: 16, overflowX: "auto" }}>
+        {TABS.map((tb) => (
+          <button key={tb.id} onClick={() => setTab(tb.id)} style={{ padding: "8px 12px", borderRadius: 999, fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", cursor: "pointer", border: tab === tb.id ? "1.5px solid #8A6A1E" : `1px solid ${t.border}`, background: tab === tb.id ? "#F8EFD9" : t.surface, color: tab === tb.id ? "#8A6A1E" : t.sub }}>{tb.label}</button>
+        ))}
+      </div>
+
+      {tab === "queue" && (
+        <div>
+          {pending.length === 0 && <EmptyState icon={<MessageCircle size={26} />} text="Koi pending sawal nahi." />}
+          {pending.map((q) => <AnswerRow key={q.id} q={q} onAnswer={answerQuestion} />)}
+        </div>
+      )}
+
+      {tab === "upload" && <UploadMasla categories={shared.categories} muftiName={profile.name} onDone={reload} />}
+
+      {tab === "live" && <StartLive onStart={startSession} />}
+
+      {tab === "stats" && (
+        <div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+            <StatBox label="Masail Jawab Diye" value={me.questionsAnswered || 0} />
+            <StatBox label="Live Sessions" value={me.sessionsHosted || 0} />
+          </div>
+          <SectionTitle text="Mere Jawab Diye Hue Masail" />
+          {myAnswered.length === 0 && <p style={{ fontSize: 13, color: t.sub }}>Abhi tak koi jawab nahi diya.</p>}
+          {myAnswered.map((q) => <QuestionCard key={q.id} q={q} />)}
+          <SectionTitle text="Meri Sessions" style={{ marginTop: 16 }} />
+          {mySessions.map((s) => <SessionRow key={s.id} s={s} ended={s.status === "ended"} disabled={s.status !== "live"} onJoin={() => setActiveSession(s)} />)}
+        </div>
+      )}
+
+      {activeSession && (
+        <LiveRoom session={activeSession} refreshSession={refreshSession} onLeave={() => { setActiveSession(null); reload(); }} currentUser={profile.name} isHost />
+      )}
+    </div>
+  );
+}
+
+/* ============================== Admin panel ============================== */
+
+function BarRow({ label, value, max, color = "#0B6E55" }) {
+  const t = useTheme();
+  const pct = max > 0 ? Math.max(4, Math.round((value / max) * 100)) : 0;
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: t.text, marginBottom: 4 }}>
+        <span>{label}</span><span style={{ fontWeight: 700 }}>{value}</span>
+      </div>
+      <div style={{ height: 8, background: t.surface3, borderRadius: 999, overflow: "hidden" }}>
+        <div className="bar-grow" style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 999 }} />
+      </div>
+    </div>
+  );
+}
+
+function AdminPanel({ shared, reload, dark, onToggleDark }) {
+  const t = useTheme();
+  const [tab, setTab] = useState("dashboard");
+  const [announcementText, setAnnouncementText] = useState(shared.announcement || "");
+  const [newCategory, setNewCategory] = useState("");
+
+  const approveMufti = async (id, status) => {
+    const muftis = await getShared("muftis", []);
+    const idx = muftis.findIndex((m) => m.id === id);
+    if (idx !== -1) { muftis[idx].status = status; await setShared("muftis", muftis); reload(); }
+  };
+
+  const removeQuestion = async (id) => {
+    const questions = await getShared("questions", []);
+    await setShared("questions", questions.filter((q) => q.id !== id));
+    reload();
+  };
+
+  const forceEndSession = async (id) => {
+    const sessions = await getShared("sessions", []);
+    const idx = sessions.findIndex((s) => s.id === id);
+    if (idx !== -1) { sessions[idx].status = "ended"; await setShared("sessions", sessions); reload(); }
+  };
+
+  const featureSession = async (id) => {
+    const sessions = await getShared("sessions", []);
+    const idx = sessions.findIndex((s) => s.id === id);
+    if (idx !== -1) { sessions[idx].featured = !sessions[idx].featured; await setShared("sessions", sessions); reload(); }
+  };
+
+  const saveAnnouncement = async () => { await setShared("announcement", announcementText); reload(); };
+
+  const addCategory = async () => {
+    if (!newCategory.trim()) return;
+    const cats = [...shared.categories, newCategory.trim()];
+    await setShared("categories", cats);
+    setNewCategory("");
+    reload();
+  };
+  const removeCategory = async (c) => { await setShared("categories", shared.categories.filter((x) => x !== c)); reload(); };
+
+  const exportData = () => {
+    const blob = new Blob([JSON.stringify(shared, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `ilmlive-export-${Date.now()}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const uniqueAskers = new Set(shared.questions.map((q) => q.user)).size;
+  const catCounts = shared.categories.map((c) => ({ c, n: shared.questions.filter((q) => q.category === c).length }));
+  const maxCatCount = Math.max(1, ...catCounts.map((x) => x.n));
+  const approvedMuftis = shared.muftis.filter((m) => m.status === "approved");
+  const topMuftis = approvedMuftis.map((m) => {
+    const qs = shared.questions.filter((q) => q.muftiName === m.name && q.status === "answered");
+    const sum = qs.reduce((a, q) => a + (q.ratingSum || 0), 0);
+    const cnt = qs.reduce((a, q) => a + (q.ratingCount || 0), 0);
+    return { ...m, avg: cnt ? sum / cnt : 0 };
+  }).sort((a, b) => (b.questionsAnswered || 0) - (a.questionsAnswered || 0)).slice(0, 5);
+  const maxAnswered = Math.max(1, ...topMuftis.map((m) => m.questionsAnswered || 0));
+
+  const notifications = [
+    { id: "pend-m", icon: <Users size={13} />, text: `${shared.muftis.filter((m) => m.status === "pending").length} mufti manzoori ke muntazir`, time: "Muftis" },
+    { id: "pend-q", icon: <Hourglass size={13} />, text: `${shared.questions.filter((q) => q.status === "pending").length} sawal pending hain`, time: "Moderation" },
+    { id: "live", icon: <Radio size={13} />, text: `${shared.sessions.filter((s) => s.status === "live").length} sessions is waqt live hain`, time: "Sessions" },
+  ];
+
+  const TABS = [
+    { id: "dashboard", label: "Dashboard" },
+    { id: "analytics", label: "Analytics" },
+    { id: "muftis", label: "Muftis" },
+    { id: "moderation", label: "Moderation" },
+    { id: "sessions", label: "Live Sessions" },
+    { id: "settings", label: "Settings" },
+  ];
+
+  return (
+    <div style={{ padding: "16px 16px 40px" }}>
+      <TopBar title="Admin Panel" icon={<ShieldCheck size={18} color="#5B3F91" />} notifications={notifications} dark={dark} onToggleDark={onToggleDark} onRefresh={reload} tone="purple" />
+      <p style={{ fontSize: 12.5, color: t.sub, marginBottom: 16, marginTop: -8 }}>Poora management system yahan se control hota hai.</p>
+
+      <div style={{ display: "flex", gap: 6, marginBottom: 16, overflowX: "auto" }}>
+        {TABS.map((tb) => (
+          <button key={tb.id} onClick={() => setTab(tb.id)} style={{ padding: "8px 12px", borderRadius: 999, fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap", cursor: "pointer", border: tab === tb.id ? "1.5px solid #5B3F91" : `1px solid ${t.border}`, background: tab === tb.id ? "#EFEAF8" : t.surface, color: tab === tb.id ? "#5B3F91" : t.sub }}>{tb.label}</button>
+        ))}
+      </div>
+
+      {tab === "dashboard" && (
+        <div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <StatBox label="KUL SAWALAAT" value={shared.questions.length} />
+            <StatBox label="JAWAB DIYE GAYE" value={shared.questions.filter((q) => q.status === "answered").length} />
+            <StatBox label="ACTIVE USERS" value={uniqueAskers} />
+            <StatBox label="MUFTI (APPROVED)" value={shared.muftis.filter((m) => m.status === "approved").length} />
+            <StatBox label="PENDING APPROVAL" value={shared.muftis.filter((m) => m.status === "pending").length} />
+            <StatBox label="LIVE SESSIONS" value={shared.sessions.filter((s) => s.status === "live").length} />
+          </div>
+          <GhostButton onClick={exportData} icon={<Download size={13} />} style={{ marginTop: 14, width: "100%", justifyContent: "center" }}>Data Export Karein (.json)</GhostButton>
+        </div>
+      )}
+
+      {tab === "analytics" && (
+        <div>
+          <SectionTitle icon={<BarChart3 size={15} />} text="Category ke Hisaab se Sawalaat" />
+          <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, padding: 14, marginBottom: 18 }}>
+            {catCounts.length === 0 && <p style={{ fontSize: 12.5, color: t.sub }}>Koi category nahi.</p>}
+            {catCounts.map((x) => <BarRow key={x.c} label={x.c} value={x.n} max={maxCatCount} />)}
+          </div>
+          <SectionTitle icon={<Award size={15} />} text="Behtareen Ulama (Jawab ke Hisaab se)" />
+          <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, padding: 14 }}>
+            {topMuftis.length === 0 && <p style={{ fontSize: 12.5, color: t.sub }}>Abhi koi approved mufti nahi.</p>}
+            {topMuftis.map((m) => <BarRow key={m.id} label={m.name} value={m.questionsAnswered || 0} max={maxAnswered} color="#8A6A1E" />)}
+          </div>
+        </div>
+      )}
+
+      {tab === "muftis" && (
+        <div>
+          {shared.muftis.length === 0 && <EmptyState icon={<Users size={26} />} text="Abhi tak koi mufti registration nahi hui." />}
+          {shared.muftis.map((m) => (
+            <div key={m.id} style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, padding: 14, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14.5, color: t.text }}>{m.name}</div>
+                  <div style={{ fontSize: 12, color: t.sub, marginTop: 2 }}>{m.bio || "Koi bio nahi"}</div>
+                </div>
+                <Badge tone={m.status === "approved" ? "brand" : m.status === "pending" ? "grey" : "red"}>{m.status}</Badge>
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                {m.status !== "approved" && <GhostButton onClick={() => approveMufti(m.id, "approved")} icon={<CheckCircle2 size={13} />}>Manzoor</GhostButton>}
+                {m.status !== "suspended" && <GhostButton onClick={() => approveMufti(m.id, "suspended")} icon={<Ban size={13} />}>Suspend</GhostButton>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === "moderation" && (
+        <div>
+          {shared.questions.length === 0 && <EmptyState icon={<Flag size={26} />} text="Koi content nahi." />}
+          {shared.questions.map((q) => (
+            <div key={q.id} style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, padding: 12, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 13, color: t.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{q.question}</div>
+                <div style={{ fontSize: 11, color: t.sub2 }}>{q.user} · {q.status}</div>
+              </div>
+              <button onClick={() => removeQuestion(q.id)} style={{ background: "none", border: "none", color: "#B03434", cursor: "pointer", flexShrink: 0 }}><Trash2 size={16} /></button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === "sessions" && (
+        <div>
+          {shared.sessions.length === 0 && <EmptyState icon={<Radio size={26} />} text="Koi session nahi." />}
+          {shared.sessions.map((s) => (
+            <div key={s.id} style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, padding: 12, marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: t.text }}>{s.title}</div>
+                  <div style={{ fontSize: 11.5, color: t.sub }}>{s.host} · {s.status}</div>
+                </div>
+                {s.status === "live" && <LivePulse />}
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                {s.status === "live" && <GhostButton onClick={() => forceEndSession(s.id)} icon={<Square size={12} />}>Khatam Karein</GhostButton>}
+                <GhostButton onClick={() => featureSession(s.id)} icon={<Star size={12} />}>{s.featured ? "Unfeature" : "Feature"}</GhostButton>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === "settings" && (
+        <div>
+          <SectionTitle icon={<Megaphone size={15} />} text="Global Announcement" />
+          <textarea value={announcementText} onChange={(e) => setAnnouncementText(e.target.value)} placeholder="Sab users ko dikhne wala paigham…" style={{ ...inputStyleFor(t), minHeight: 70, marginBottom: 8 }} />
+          <PrimaryButton onClick={saveAnnouncement}>Save Karein</PrimaryButton>
+
+          <SectionTitle icon={<Tag size={15} />} text="Categories" style={{ marginTop: 24 }} />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+            {shared.categories.map((c) => (
+              <span key={c} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: t.surface3, borderRadius: 999, padding: "5px 10px", fontSize: 12.5, color: t.text }}>
+                {c} <button onClick={() => removeCategory(c)} style={{ background: "none", border: "none", cursor: "pointer", color: "#B03434", display: "flex" }}><XCircle size={13} /></button>
+              </span>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Nayi category" style={{ ...inputStyleFor(t), flex: 1 }} />
+            <PrimaryButton onClick={addCategory}>+ Add</PrimaryButton>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================== App root ============================== */
+
+export default function App() {
+  const [booted, setBooted] = useState(false);
+  const [session, setSession] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [shared, setShared] = useState({ questions: [], sessions: [], muftis: [], categories: DEFAULT_CATEGORIES, announcement: "" });
+  const [loading, setLoading] = useState(true);
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setBooted(true), 1300);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const pref = await getPersonal("darkMode", false);
+      setDark(!!pref);
+    })();
+  }, []);
+
+  const toggleDark = async () => {
+    setDark((d) => {
+      const next = !d;
+      setPersonal("darkMode", next);
+      return next;
+    });
+  };
+
+  const reload = useCallback(async () => {
+    const [questions, sessions, muftis, categories, announcement] = await Promise.all([
+      getShared("questions", []),
+      getShared("sessions", []),
+      getShared("muftis", []),
+      getShared("categories", DEFAULT_CATEGORIES),
+      getShared("announcement", ""),
+    ]);
+    setShared({ questions, sessions, muftis, categories, announcement });
+  }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    (async () => { setLoading(true); await reload(); setLoading(false); })();
+    const t = setInterval(reload, 6000);
+    return () => clearInterval(t);
+  }, [session, reload]);
+
+  const enter = async (data) => {
+    if (data.role === "scholar") {
+      const muftis = await getShared("muftis", []);
+      let existing = muftis.find((m) => m.name === data.name);
+      if (!existing) {
+        existing = { id: uid(), name: data.name, bio: data.bio, status: "pending", questionsAnswered: 0, sessionsHosted: 0 };
+        await setShared("muftis", [...muftis, existing]);
+      }
+    }
+    const prof = await getPersonal("profile", { name: data.name, premium: false, bookmarks: [], ratedQuestions: [] });
+    prof.name = data.name;
+    if (!prof.ratedQuestions) prof.ratedQuestions = [];
+    await setPersonal("profile", prof);
+    setProfile(prof);
+    setSession(data);
+  };
+
+  const logout = () => { setSession(null); setProfile(null); };
+
+  const theme = dark ? DARK : LIGHT;
+
+  if (!booted) return <SplashScreen />;
+  if (!session) return <LoginScreen onEnter={enter} />;
+
+  return (
+    <ThemeCtx.Provider value={theme}>
+      <div style={{ minHeight: "100vh", background: theme.bg, fontFamily: "'Poppins', sans-serif", transition: "background .2s ease" }}>
+        {!loading && session.role === "user" && profile && <UserPanel shared={shared} profile={profile} setProfile={setProfile} reload={reload} dark={dark} onToggleDark={toggleDark} />}
+        {!loading && session.role === "scholar" && profile && (
+          <div>
+            <ScholarPanel shared={shared} profile={profile} reload={reload} dark={dark} onToggleDark={toggleDark} />
+            <div style={{ padding: "0 16px 20px" }}><GhostButton onClick={logout} icon={<LogOut size={14} />}>Role Badlein</GhostButton></div>
+          </div>
+        )}
+        {!loading && session.role === "admin" && (
+          <div>
+            <AdminPanel shared={shared} reload={reload} dark={dark} onToggleDark={toggleDark} />
+            <div style={{ padding: "0 16px 20px" }}><GhostButton onClick={logout} icon={<LogOut size={14} />}>Logout</GhostButton></div>
+          </div>
+        )}
+        {loading && (
+          <div style={{ padding: 16 }}>
+            <Skeleton /><Skeleton /><Skeleton />
+          </div>
+        )}
+      </div>
+    </ThemeCtx.Provider>
+  );
+}
+
+createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
